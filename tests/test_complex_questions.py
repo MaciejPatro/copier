@@ -71,6 +71,17 @@ def template_path(tmp_path_factory) -> str:
                         one: first
                         two: second
                         three: third
+                choose_dict_disabling:
+                    help: You see the dict key, some options are disabled with reason
+                    default: third
+                    choices:
+                        one: first
+                        two:
+                            value: second
+                        three: third
+                        four:
+                            value: fourth
+                            disabled: The reason is testing
                 choose_number:
                     help: This must be a number
                     default: null
@@ -95,6 +106,7 @@ def template_path(tmp_path_factory) -> str:
                 choose_list: [[choose_list|tojson]]
                 choose_tuple: [[choose_tuple|tojson]]
                 choose_dict: [[choose_dict|tojson]]
+                choose_dict_disabling: [[choose_dict_disabling|tojson]]
                 choose_number: [[choose_number|tojson]]
                 minutes_under_water: [[minutes_under_water|tojson]]
                 optional_value: [[optional_value|tojson]]
@@ -132,6 +144,7 @@ def test_api(tmp_path, template_path):
             choose_list: "first"
             choose_tuple: "second"
             choose_dict: "third"
+            choose_dict_disabling: "third"
             choose_number: null
             minutes_under_water: 10
             optional_value: null
@@ -212,6 +225,24 @@ def test_cli_interactive(tmp_path, spawn, template_path):
         )
     )
     tui.sendline()
+    expect_prompt(
+        tui,
+        "choose_dict_disabling",
+        "str",
+        help="You see the dict key, some options are disabled with reason",
+    )
+    deque(
+        map(
+            tui.expect_exact,
+            [
+                "one",
+                "two",
+                "three",
+                "- four (The reason is testing)",
+            ],
+        )
+    )
+    tui.sendline()
     expect_prompt(tui, "choose_number", "float", help="This must be a number")
     deque(
         map(
@@ -239,6 +270,7 @@ def test_cli_interactive(tmp_path, spawn, template_path):
             choose_list: "first"
             choose_tuple: "second"
             choose_dict: "third"
+            choose_dict_disabling: "third"
             choose_number: -1.1
             minutes_under_water: 1
             optional_value: null
@@ -278,6 +310,7 @@ def test_api_str_data(tmp_path, template_path):
             choose_list: "first"
             choose_tuple: "second"
             choose_dict: "third"
+            choose_dict_disabling: "third"
             choose_number: "0"
             minutes_under_water: 10
             optional_value: null
@@ -296,6 +329,7 @@ def test_cli_interatively_with_flag_data_and_type_casts(
             "--data=choose_list=second",
             "--data=choose_dict=first",
             "--data=choose_tuple=third",
+            "--data=choose_dict_disabling=first",
             "--data=choose_number=1",
             "copy",
             template_path,
@@ -345,6 +379,7 @@ def test_cli_interatively_with_flag_data_and_type_casts(
             choose_list: "second"
             choose_tuple: "third"
             choose_dict: "first"
+            choose_dict_disabling: "first"
             choose_number: 1
             minutes_under_water: 10
             optional_value: null

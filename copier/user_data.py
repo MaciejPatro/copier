@@ -278,7 +278,10 @@ class Question:
             name = str(self.render_value(name))
             # The value can be templated
             value = self.render_value(value)
-            result.append(Choice(name, value))
+            if isinstance(value, dict):
+                result.append(Choice(name, value["value"], value.get("disabled")))
+            else:
+                result.append(Choice(name, value))
         return result
 
     def filter_answer(self, answer) -> Any:
